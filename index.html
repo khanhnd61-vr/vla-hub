@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLA Hub: VLA inference benchmarks</title>
+  <meta name="description" content="Search measured latency and memory for open Vision-Language-Action models on GPUs, NPUs and CPUs, run with vla.cpp and vla.simd.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b0b'/%3E%3Crect x='7' y='13' width='5' height='12' rx='1.5' fill='%233987e5'/%3E%3Crect x='14' y='7' width='5' height='18' rx='1.5' fill='%23eb6834'/%3E%3Crect x='21' y='17' width='4' height='8' rx='1.5' fill='%23fcfcfb'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/site.css">
+  <script>
+    // Apply a saved theme before first paint.
+    try { const t = localStorage.getItem('vla-hub-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#explorer">Skip to the explorer</a>
+
+  <header class="topbar">
+    <div class="wrap topbar__in">
+      <a class="brand" href="#top" aria-label="VLA Hub, back to top">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="brand__bg"/><rect x="7" y="13" width="5" height="12" rx="1.5" class="brand__a"/><rect x="14" y="7" width="5" height="18" rx="1.5" class="brand__b"/><rect x="21" y="17" width="4" height="8" rx="1.5" class="brand__c"/></svg>
+        <span>VLA Hub</span>
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#explorer">Explorer</a>
+        <a href="#engines">Engines</a>
+        <a href="#compare">Compare</a>
+        <a href="#models">Models</a>
+        <a href="#method">Method</a>
+      </nav>
+      <button class="theme" type="button" aria-label="Switch to dark theme" data-theme-toggle>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="theme__moon"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="theme__sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero: the search is the way in -->
+    <section class="hero">
+      <div class="wrap hero__in">
+        <p class="eyebrow">Vision-Language-Action inference, measured</p>
+        <h1>How fast does your robot policy run?</h1>
+        <p class="lede">
+          Search measured latency and memory for <strong data-count="models">16</strong> open VLA policies
+          on <strong data-count="devices">16</strong> devices, from an RTX 5090 to a Raspberry Pi 5.
+          Two complementary engines produced every number:
+          <a class="eng eng--cpp" href="#engines">vla.cpp</a> for GPUs, NPUs and CPUs, and
+          <a class="eng eng--simd" href="#engines">vla.simd</a> for CPU-only robots.
+        </p>
+        <form class="search" role="search" data-hero-search>
+          <label class="sr" for="hero-q">Search models, devices and backends</label>
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="hero-q" type="search" autocomplete="off" spellcheck="false"
+                 placeholder="Try “SmolVLA Jetson”, “π0.5 CUDA” or “Raspberry Pi”">
+          <kbd aria-hidden="true">/</kbd>
+          <button type="submit">Search</button>
+        </form>
+        <div class="suggest" aria-label="Example searches">
+          <span>Try</span>
+          <button type="button" data-q="SmolVLA">SmolVLA</button>
+          <button type="button" data-q="Jetson">Jetson</button>
+          <button type="button" data-q="Raspberry Pi 5">Raspberry Pi 5</button>
+          <button type="button" data-q="NPU">NPUs</button>
+          <button type="button" data-q="π0.5 CUDA">π0.5 on CUDA</button>
+          <button type="button" data-q="INT8">INT8</button>
+        </div>
+        <dl class="stats">
+          <div><dt>Models</dt><dd data-count="models">16</dd></div>
+          <div><dt>Devices</dt><dd data-count="devices">16</dd></div>
+          <div><dt>Hardware targets</dt><dd data-count="targets"></dd></div>
+          <div><dt>Measurements</dt><dd data-count="results"></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Explorer -->
+    <section class="section" id="explorer" aria-labelledby="explorer-title">
+      <div class="wrap">
+        <header class="section__head">
+          <p class="kicker">Explorer</p>
+          <h2 id="explorer-title">Every measurement, searchable</h2>
+          <p>Filter by engine, processor, model or device. Each row is one call to the policy: one action chunk from the camera frames and instruction. Open a row for its full statistics, memory, checkpoint and source report.</p>
+        </header>
+
+        <div class="filters" role="group" aria-label="Filters">
+          <label class="field field--q">
+            <span class="field__label">Search</span>
+            <span class="qbox">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Model, device, backend…">
+            </span>
+          </label>
+          <fieldset class="field seg" data-seg="engine">
+            <legend class="field__label">Engine</legend>
+            <label><input type="radio" name="engine" value="all" checked><span>All</span></label>
+            <label><input type="radio" name="engine" value="vla.cpp"><span><i class="dot dot--cpp"></i>vla.cpp</span></label>
+            <label><input type="radio" name="engine" value="vla.simd"><span><i class="dot dot--simd"></i>vla.simd</span></label>
+          </fieldset>
+          <fieldset class="field seg" data-seg="proc">
+            <legend class="field__label">Processor</legend>
+            <label><input type="radio" name="proc" value="all" checked><span>All</span></label>
+            <label><input type="radio" name="proc" value="GPU"><span>GPU</span></label>
+            <label><input type="radio" name="proc" value="NPU"><span>NPU</span></label>
+            <label><input type="radio" name="proc" value="CPU"><span>CPU</span></label>
+          </fieldset>
+          <label class="field">
+            <span class="field__label">Model</span>
+            <select id="f-model"></select>
+          </label>
+          <label class="field">
+            <span class="field__label">Device</span>
+            <select id="f-device"></select>
+          </label>
+          <label class="field">
+            <span class="field__label">Sort</span>
+            <select id="f-sort">
+              <option value="model">By model</option>
+              <option value="device">By device</option>
+              <option value="latency">Fastest first</option>
+              <option value="rate">Most actions / s</option>
+              <option value="memory">Least memory</option>
+            </select>
+          </label>
+          <div class="toggles">
+            <label class="check"><input type="checkbox" id="f-rt"><span>Real-time only <small>≥ 30 actions/s</small></span></label>
+            <label class="check"><input type="checkbox" id="f-all"><span>Show every config <small>not just the fastest</small></span></label>
+          </div>
+        </div>
+
+        <div id="model-panel" class="mpanel" hidden></div>
+
+        <div class="results-bar">
+          <p id="count" aria-live="polite"></p>
+          <button type="button" class="linkbtn" id="reset">Reset filters</button>
+        </div>
+
+        <div class="table-card">
+          <table class="results">
+            <caption class="sr">Measured latency, action rate and memory for each model and hardware target</caption>
+            <thead>
+              <tr>
+                <th scope="col">Model · engine</th>
+                <th scope="col">Hardware</th>
+                <th scope="col">Setup</th>
+                <th scope="col" class="c-lat">
+                  <span class="th-lat">Latency, ms <small>per call, log scale</small></span>
+                  <span class="scale" aria-hidden="true"><i style="left:0%">1</i><i style="left:23.3%">10</i><i style="left:46.5%">100</i><i style="left:69.8%">1 s</i><i style="left:93%">10 s</i></span>
+                </th>
+                <th scope="col" class="num">Actions / s</th>
+                <th scope="col" class="num">Memory</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div id="empty" class="empty" hidden>
+            <p><strong>No measurement matches.</strong> Try fewer words, or clear a filter.</p>
+            <button type="button" class="btn" data-reset>Reset filters</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn--ghost more" id="more" hidden></button>
+      </div>
+    </section>
+
+    <!-- Engines -->
+    <section class="section section--alt" id="engines" aria-labelledby="engines-title">
+      <div class="wrap">
+        <header class="section__head">
+          <p class="kicker">Engines</p>
+          <h2 id="engines-title">Two engines, one map of VLA inference</h2>
+          <p>vla.cpp brings a wide set of VLAs to every accelerator through ggml. vla.simd goes deep on the CPU with its own kernels and an INT8 path, down to a Raspberry Pi 5. Where one stops, the other starts.</p>
+        </header>
+        <div class="engines" id="engine-cards"></div>
+
+        <div class="coverage-card">
+          <div class="coverage-card__head">
+            <h3>Where each engine runs</h3>
+            <p>Models measured on each class of hardware. An empty cell means no report for that pair yet.</p>
+          </div>
+          <table class="coverage" id="coverage">
+            <caption class="sr">Number of models measured per hardware class and engine</caption>
+          </table>
+        </div>
+
+        <div class="choose">
+          <div class="choose__item choose__item--cpp">
+            <h3>Reach for <span class="eng eng--cpp">vla.cpp</span> when…</h3>
+            <ul>
+              <li>the robot has an accelerator: an NVIDIA GPU or Jetson, Apple Silicon, an Intel GPU or NPU, or a Snapdragon NPU;</li>
+              <li>you need a large VLA such as π0, π0.5, GR00T or OpenVLA-OFT;</li>
+              <li>you want one binary and one GGUF per model across all of them.</li>
+            </ul>
+          </div>
+          <div class="choose__item choose__item--simd">
+            <h3>Reach for <span class="eng eng--simd">vla.simd</span> when…</h3>
+            <ul>
+              <li>the robot has only a CPU, from a Raspberry Pi 5 to a desktop;</li>
+              <li>your policy is ACT, IMPACT, SmolVLA, Octo-Small, TurboVLA or Diffusion Policy;</li>
+              <li>you can trade some numerical precision for INT8 speed, or serve LeRobot's async client.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compare -->
+    <section class="section" id="compare" aria-labelledby="compare-title">
+      <div class="wrap">
+        <header class="section__head">
+          <p class="kicker">Compare</p>
+          <h2 id="compare-title">Same policy, same CPU, two engines</h2>
+          <p>Three policies run in both engines. On the CPUs that both measured, this is how their latency lines up. Lower is better.</p>
+        </header>
+        <div class="compare-card">
+          <div class="compare-controls">
+            <div class="tabs" role="tablist" aria-label="Policy" id="compare-models"></div>
+            <fieldset class="seg seg--sm" data-seg="cmp-prec">
+              <legend class="field__label">vla.simd precision</legend>
+              <label><input type="radio" name="cmp-prec" value="FP32" checked><span>FP32</span></label>
+              <label><input type="radio" name="cmp-prec" value="INT8"><span>INT8 (W8A8)</span></label>
+            </fieldset>
+          </div>
+          <p class="compare-summary" id="compare-summary" aria-live="polite"></p>
+          <div class="legend" aria-hidden="true">
+            <span><i class="key key--cpp"></i>vla.cpp, fastest flags</span>
+            <span><i class="key key--simd"></i><span id="compare-simd-label">vla.simd, FP32</span></span>
+          </div>
+          <div id="compare-chart" class="bchart"></div>
+          <ul class="caveats">
+            <li>The engines time different checkpoints: vla.cpp the LIBERO fine-tunes, vla.simd the SO-101 policies, except TurboVLA, which is LIBERO in both.</li>
+            <li>vla.cpp reports the mean of 20 calls with a synthetic 16-token prompt; vla.simd the median of 50 calls, encoding the instruction on every SmolVLA and TurboVLA call.</li>
+            <li>Each engine runs its own fastest thread count and flags for that CPU, as listed in the row's details in the explorer.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Models -->
+    <section class="section section--alt" id="models" aria-labelledby="models-title">
+      <div class="wrap">
+        <header class="section__head">
+          <p class="kicker">Models</p>
+          <h2 id="models-title">The policies</h2>
+          <p>Every checkpoint is a single GGUF on Hugging Face. Pick a policy to see it on every device.</p>
+        </header>
+        <div class="bundles">
+          <a class="bundle bundle--cpp" href="https://huggingface.co/collections/vrfai/vlacpp-model-bundles" target="_blank" rel="noopener">
+            <span class="bundle__org">huggingface.co/vrfai</span>
+            <strong>vla.cpp model bundles</strong>
+            <span>13 policies, LIBERO checkpoints</span>
+          </a>
+          <a class="bundle bundle--simd" href="https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle-6ab649fa9d1f2e8b66512a31" target="_blank" rel="noopener">
+            <span class="bundle__org">huggingface.co/khanhnd61</span>
+            <strong>vla.simd model bundle</strong>
+            <span>SO-101 policies for the CPU engine</span>
+          </a>
+        </div>
+        <div class="model-grid" id="model-grid"></div>
+      </div>
+    </section>
+
+    <!-- Method -->
+    <section class="section" id="method" aria-labelledby="method-title">
+      <div class="wrap">
+        <header class="section__head">
+          <p class="kicker">Method</p>
+          <h2 id="method-title">How the numbers were measured</h2>
+        </header>
+        <div class="method">
+          <div>
+            <h3>What one number means</h3>
+            <p>Latency is the wall time of one <code>predict</code> call in the engine's own process: image preprocessing, every encoder, all denoising steps and action decoding. It excludes the network, the simulator and the robot, and it says nothing about task success.</p>
+            <p><strong>Actions / s</strong> is the action chunk divided by the latency: how many actions a policy can supply per second when the robot plays each chunk in full. At 30 actions/s or more it keeps up with a 30 Hz control loop.</p>
+            <p>By default the explorer shows the fastest configuration each report found for a model on a device and processor. Flash attention, lower-precision weights and INT8 can move the predicted actions, so a checkpoint's success rate at the defaults may not carry over. Tick <em>Show every config</em> to see the defaults as well.</p>
+          </div>
+          <div>
+            <h3><span class="eng eng--cpp">vla.cpp</span></h3>
+            <p><code>vla-bench</code> on synthetic inputs, at each model's native views and input size: 3 warmups and 20 timed calls per process, 3 processes, and the process with the lowest mean is reported. Memory is the peak VRAM and host RSS, or the RSS alone on unified memory. Every device ran commit <code data-round="vla.cpp"></code>, except the Core Ultra X7 358H, at <code>450992c</code> (one OpenVINO fix later).</p>
+            <p>Two rows differ: the RTX 5090 is its PR author's minimum over 5 rounds, and the Apple M5 Max comes from an earlier build. Task success is from LIBERO on an RTX 3090, 200 episodes per suite.</p>
+            <p><a href="https://github.com/VinRobotics/vla.cpp/tree/main/docs/benchmark" target="_blank" rel="noopener">vla.cpp benchmark reports ↗</a></p>
+          </div>
+          <div>
+            <h3><span class="eng eng--simd">vla.simd</span></h3>
+            <p><code>vla-simd-serve --bench</code> with fresh random frames every call: 5 warmups and 50 timed calls (20 when a call takes more than 3 s), and the median is reported. Each model runs at its fastest measured thread count and settings, in FP32 and in INT8 (W8A8) where the CPU has AVX-VNNI or Arm dotprod. Memory is the peak process RSS.</p>
+            <p>Every device ran commit <code data-round="vla.simd"></code>. The reports measure no accuracy; INT8 changes the numerics.</p>
+            <p><a href="https://github.com/cair-vinuni/vla.simd/tree/fix-inference-and-ci/docs/benchmark" target="_blank" rel="noopener">vla.simd benchmark reports ↗</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__in">
+      <div>
+        <p class="brand brand--foot">
+          <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="brand__bg"/><rect x="7" y="13" width="5" height="12" rx="1.5" class="brand__a"/><rect x="14" y="7" width="5" height="18" rx="1.5" class="brand__b"/><rect x="21" y="17" width="4" height="8" rx="1.5" class="brand__c"/></svg>
+          <span>VLA Hub</span>
+        </p>
+        <p class="footer__note">Every number comes from the engines' published benchmark reports. Data generated <span data-generated></span>.</p>
+      </div>
+      <nav class="footer__links" aria-label="Project links">
+        <div>
+          <span class="eng eng--cpp">vla.cpp</span>
+          <a href="https://github.com/VinRobotics/vla.cpp" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://huggingface.co/collections/vrfai/vlacpp-model-bundles" target="_blank" rel="noopener">Hugging Face</a>
+          <a href="https://arxiv.org/abs/2606.08094" target="_blank" rel="noopener">Paper</a>
+        </div>
+        <div>
+          <span class="eng eng--simd">vla.simd</span>
+          <a href="https://github.com/cair-vinuni/vla.simd" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle-6ab649fa9d1f2e8b66512a31" target="_blank" rel="noopener">Hugging Face</a>
+          <a href="https://arxiv.org/abs/2609.24274" target="_blank" rel="noopener">Paper</a>
+        </div>
+      </nav>
+    </div>
+  </footer>
+
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+
+  <script src="data/meta.js"></script>
+  <script src="data/bench.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
