@@ -635,7 +635,9 @@
     for (const [id, e] of Object.entries(META.engines)) {
       const rows = ROWS.filter((r) => r.engine === id);
       const card = el('article', `engine c-${ENGINE_CLASS[id]}`);
-      const name = el('h3', 'engine__name', e.name);
+      const thumb = el('div', 'engine__thumb');
+      thumb.append(el('h3', 'engine__name', e.name));
+      const body = el('div', 'engine__body');
       const nums = el('div', 'engine__nums');
       for (const [n, label] of [
         [count((r) => r.model, rows), 'policies'],
@@ -653,7 +655,8 @@
         a.append(document.createTextNode(' ↗'));
         links.append(a);
       }
-      card.append(name, el('p', 'engine__tag', e.tagline), el('p', 'engine__blurb', e.blurb), nums, facts, links);
+      body.append(el('p', 'engine__tag', e.tagline), el('p', 'engine__blurb', e.blurb), nums, facts, links);
+      card.append(thumb, body);
       root.append(card);
     }
   };
@@ -831,20 +834,6 @@
       grid.append(card);
     }
   };
-
-  // ---------- Theme ----------
-  const themeBtn = $('[data-theme-toggle]');
-  const media = window.matchMedia('(prefers-color-scheme: dark)');
-  const currentTheme = () => document.documentElement.dataset.theme || (media.matches ? 'dark' : 'light');
-  const labelTheme = () => themeBtn.setAttribute('aria-label', currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-  themeBtn.addEventListener('click', () => {
-    const next = currentTheme() === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('vla-hub-theme', next); } catch (e) { /* storage blocked */ }
-    labelTheme();
-  });
-  media.addEventListener('change', labelTheme);
-  labelTheme();
 
   // ---------- Start ----------
   bindTips($('#explorer'));
