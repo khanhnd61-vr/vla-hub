@@ -42,8 +42,7 @@ window.VLA_META = {
         { label: 'Project page', href: 'https://vla-simd.github.io/' },
       ],
       hfOrg: 'khanhnd61',
-      // The reports are on this branch until it merges into main.
-      reports: 'https://github.com/cair-vinuni/vla.simd/blob/fix-inference-and-ci/docs/benchmark/',
+      reports: 'https://github.com/cair-vinuni/vla.simd/blob/main/docs/benchmark/',
       protocol: {
         median: 'Median of 50 timed queries after 5 warmups (20 when a query takes more than 3 s), at the fastest measured thread count and settings.',
       },
@@ -176,8 +175,9 @@ window.VLA_META = {
     m4:       { name: 'Apple M4 (Mac mini)', short: 'Apple M4', kind: 'Apple Silicon', memory: '24 GB unified', aliases: ['apple', 'mac', 'mac mini', 'metal'],
                 notes: { 'vla.cpp': 'Memory is the process RSS, which includes the Metal buffers.' } },
     a380:     { name: 'Intel Arc A380', short: 'Arc A380', kind: 'Desktop GPU', memory: '6 GB GDDR6', aliases: ['intel', 'arc', 'sycl', 'oneapi'] },
-    x7:       { name: 'Intel Core Ultra X7 358H', short: 'Core Ultra X7 358H', kind: 'Laptop SoC', memory: '62 GiB shared', aliases: ['intel', 'panther lake', 'openvino', 'b390', 'ai boost', 'laptop'],
-                notes: { 'vla.cpp': '25 W long-term power limit. OpenVINO 2026.4 for the iGPU, NPU and OpenVINO CPU rows. π0 on the NPU is left out: its output was listed as wrong at an earlier llama.cpp pin.' } },
+    x7:       { name: 'Intel Core Ultra X7 358H', short: 'Core Ultra X7 358H', kind: 'Embedded board', memory: '64 GB shared', aliases: ['intel', 'panther lake', 'openvino', 'b390', 'ai boost', 'aaeon', 'upx', 'up board', 'x86'],
+                notes: { 'vla.cpp': 'Balanced platform profile with a 25 W long-term power limit. OpenVINO 2026.4 for the iGPU, NPU and OpenVINO CPU rows. π0 on the NPU is left out: its output was listed as wrong at an earlier llama.cpp pin.',
+                         'vla.simd': 'AAEON CEXD-INTRBL board in the performance power profile, measured at sustained power after a heat soak. Octo-Small, SmolVLA and Diffusion Policy were not run: the network was too slow to copy their checkpoints.' } },
     snapx:    { name: 'Snapdragon X X1-26-100', short: 'Snapdragon X', kind: 'Laptop SoC', memory: '16 GB', aliases: ['qualcomm', 'snapdragon', 'oryon', 'hexagon', 'windows', 'arm', 'laptop'],
                 notes: { 'vla.cpp': 'Windows 11 on the Balanced power plan. On the NPU, ops it rejects fall back to the CPU.', 'vla.simd': 'Windows 11 on AC power; sustained numbers, about 11% slower than a cold start.' } },
     i7:       { name: 'Intel Core i7-14700F', short: 'Core i7-14700F', kind: 'Desktop CPU', memory: '64 GB', aliases: ['intel', 'raptor lake', 'x86', 'desktop'],

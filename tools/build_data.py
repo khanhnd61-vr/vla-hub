@@ -75,10 +75,12 @@ SIMD_REPORTS = {
     'raspberry-pi-5.md': ('pi5', 'CPU'), 'snapdragon-x.md': ('snapx', 'Oryon CPU'),
     'apple-m4.md': ('m4', 'CPU'), 'amd-ryzen-5-5500.md': ('ryzen5', 'CPU'),
     'intel-core-i5-12400f.md': ('i5', 'CPU'), 'intel-core-i7-14700f.md': ('i7', 'CPU'),
-    'intel-core-i9-14900hx.md': ('i9', 'CPU'),
+    'intel-core-i9-14900hx.md': ('i9', 'CPU'), 'intel-core-ultra-x7-358h.md': ('x7', 'CPU'),
 }
 SIMD_BACKENDS = {'x86-avx2': 'AVX2', 'amd-zen': 'AVX2', 'apple': 'NEON + Accelerate', 'neon': 'NEON'}
 SIMD_ROUND = '7636baa'
+# Reports that ran at a different commit: c60b286 is the round's code merged into main.
+SIMD_BUILD = {'x7': 'c60b286'}
 
 
 def tables(text):
@@ -221,7 +223,7 @@ def build_simd(repo):
             stats = {k: pick(hdr, r, f'{k} (ms)') for k in ('p10', 'p90', 'p95')}
             stats['median'] = pick(hdr, r, 'Median (ms)')
             out.append(dict(engine='vla.simd', model=SIMD_MODELS[r[0]], device=dev,
-                            backend=backend, proc='CPU', unit=unit, build=SIMD_ROUND, report=fn,
+                            backend=backend, proc='CPU', unit=unit, build=SIMD_BUILD.get(dev, SIMD_ROUND), report=fn,
                             config=r[1], setup=f'{r[1]} · {s["threads"]} threads',
                             threads=s['threads'], int8Mask=s['int8Mask'], other=s['other'],
                             stat='median', ms=stats['median'], stats=stats, vision=None,

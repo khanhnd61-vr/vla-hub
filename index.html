@@ -238,6 +238,7 @@
             <li>The engines time different checkpoints: vla.cpp the LIBERO fine-tunes, vla.simd the SO-101 policies, except TurboVLA, which is LIBERO in both.</li>
             <li>vla.cpp reports the mean of 20 calls with a synthetic 16-token prompt; vla.simd the median of 50 calls, encoding the instruction on every SmolVLA and TurboVLA call.</li>
             <li>Each engine runs its own fastest thread count and flags for that CPU, as listed in the row's details in the explorer.</li>
+            <li>On the Core Ultra X7 358H, vla.cpp ran in the balanced platform profile (25 W long-term limit) and vla.simd in the performance profile.</li>
           </ul>
           </div>
         </div>
@@ -291,8 +292,8 @@
           <div>
             <h3><span class="eng eng--simd">vla.simd</span></h3>
             <p><code>vla-simd-serve --bench</code> with fresh random frames every call: 5 warmups and 50 timed calls (20 when a call takes more than 3 s), and the median is reported. Each model runs at its fastest measured thread count and settings, in FP32 and in INT8 (W8A8) where the CPU has AVX-VNNI or Arm dotprod. Memory is the peak process RSS.</p>
-            <p>Every device ran commit <code data-round="vla.simd"></code>. The reports measure no accuracy; INT8 changes the numerics.</p>
-            <p><a href="https://github.com/cair-vinuni/vla.simd/tree/fix-inference-and-ci/docs/benchmark" target="_blank" rel="noopener">vla.simd benchmark reports ↗</a></p>
+            <p>Every device ran commit <code data-round="vla.simd"></code>, except the Core Ultra X7 358H, at <code>c60b286</code> (the same code, merged into <code>main</code>). The reports measure no accuracy; INT8 changes the numerics.</p>
+            <p><a href="https://github.com/cair-vinuni/vla.simd/tree/main/docs/benchmark" target="_blank" rel="noopener">vla.simd benchmark reports ↗</a></p>
           </div>
         </div>
       </div>

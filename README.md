@@ -30,12 +30,8 @@ python3 tools/build_data.py --vla-cpp ../../work/vla.cpp --vla-simd ../../releas
 
 A new device needs one line in `CPP_REPORTS` or `SIMD_REPORTS` in the script and an
 entry in `devices` in `data/meta.js`; a new model needs its name in `CPP_MODELS` or
-`SIMD_MODELS` and an entry in `models`.
-
-The vla.simd report links point at the `fix-inference-and-ci` branch, the only
-branch that has `docs/benchmark/` today. Once it merges, change `reports` for
-vla.simd in `data/meta.js` (and the link in the Method section of `index.html`)
-to `main`.
+`SIMD_MODELS` and an entry in `models`. A report from a commit other than the round's
+goes in `CPP_BUILD` or `SIMD_BUILD`, and the Method section of `index.html` says so.
 
 ## Deploying
 
