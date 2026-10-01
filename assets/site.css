@@ -489,6 +489,7 @@ tr.detail > td { padding: 4px 14px 20px 36px; background: var(--bg); }
 .footer__in { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: center; }
 .brand--foot { margin-bottom: 6px; }
 .footer__note { color: var(--ink-soft); font-size: .88rem; max-width: 50ch; }
+.footer__note a { color: var(--support); font-weight: 600; }
 .footer__links { display: grid; gap: 10px; font-size: .9rem; }
 .footer__links div { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
 .footer__links a { color: var(--ink-soft); }
