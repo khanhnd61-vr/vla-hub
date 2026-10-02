@@ -1,0 +1,162 @@
+name: Submit a benchmark result
+description: Share latency and memory you measured with vla.cpp or vla.simd, so the hub can list your device.
+title: "Benchmark result: <policy> on <device>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for measuring. A result joins the hub when it follows the same protocol as the published reports, so that the numbers compare cell for cell. The steps below are for **vla.cpp**; vla.simd is at the end.
+
+        ## Measuring with vla.cpp
+
+        `vla-bench` times `predict()` in-process on synthetic inputs. It measures the engine only: no network, no simulator, no robot, and nothing about task success.
+
+        **1. Build a Release binary at a known commit.**
+
+        ```bash
+        git clone https://github.com/VinRobotics/vla.cpp && cd vla.cpp
+        git rev-parse --short HEAD    # report this commit
+        cmake -B build -DCMAKE_BUILD_TYPE=Release <backend flags>
+        cmake --build build -j
+        ```
+
+        | Backend | `<backend flags>` |
+        |---|---|
+        | CPU | none |
+        | NVIDIA CUDA | `-DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=<arch>`: `86` for RTX 30, `87` for Jetson Orin, `89` for RTX 40, `120` for RTX 50 |
+        | Apple Metal | `-DGGML_METAL=ON` |
+        | Intel GPU (SYCL) | `-DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx`, after `source /opt/intel/oneapi/setvars.sh` |
+        | Intel CPU, GPU or NPU (OpenVINO) | `-DGGML_OPENVINO=ON`, after sourcing OpenVINO's `setupvars.sh` |
+
+        Other platforms, Snapdragon Hexagon among them, are in [docs/backend](https://github.com/VinRobotics/vla.cpp/tree/main/docs/backend).
+
+        **2. Use the published checkpoint.** `-hf vrfai/<repo>` downloads and caches it, or download the GGUF yourself and pass `--ckpt <file>.gguf`. Check its sha256 against the one Hugging Face lists, and do not quantize or convert it.
+
+        **3. Run each policy at its native views and input size**, with 3 warmups and 20 timed calls:
+
+        ```bash
+        ./build/vla-bench -hf vrfai/smolvla-libero-gguf --images 2 --size 512 --warmup 3 --reps 20
+        ```
+
+        | Policy | `-hf` | Arguments | Environment |
+        |---|---|---|---|
+        | SmolVLA | `vrfai/smolvla-libero-gguf` | `--images 2 --size 512` | |
+        | π0 | `vrfai/pi0-libero-finetuned-v044-gguf` | `--images 2 --size 224` | |
+        | π0.5 | `vrfai/pi05-libero-gguf` | `--images 2 --size 224` | |
+        | GR00T N1.5 | `vrfai/gr00tn1d5-libero-object-gguf` | `--images 1 --size 224` | `VLA_GR00T_EMBODIMENT=new_embodiment` |
+        | GR00T N1.6 | `vrfai/gr00tn1d6-libero-gguf` | `--images 1 --size 224` | `VLA_GR00T_EMBODIMENT=libero_panda` |
+        | GR00T N1.7 | `vrfai/gr00tn1d7-libero-gguf:object` | `--images 1 --size 256` | `VLA_GR00T_EMBODIMENT=libero_sim` |
+        | VLA-JEPA | `vrfai/vla-jepa-libero` | `--images 1 --size 256 --extra-token 151697 --extra-count 32` | |
+        | Evo-1 | `vrfai/evo1-libero-gguf` | `--images 1 --size 448` | |
+        | BitVLA | `vrfai/bitvla-libero-gguf:object` | `--images 1 --size 224` (CUDA builds only) | |
+        | VLA-Adapter | `vrfai/vla-adapter-libero-gguf` | `--images 1 --size 224` | |
+        | OpenVLA-OFT | `vrfai/openvla-oft-libero-gguf` | `--images 1 --size 224` | |
+        | Octo-Small | `vrfai/octo-small-libero-gguf` | `--images 2 --size 256` (the wrist view is resized to 128) | `VLA_OCTO_UNNORM_DATASET=libero_object` |
+        | TurboVLA | `vrfai/turbovla-libero-gguf` | `--images 2 --size 256` | |
+
+        `vla-bench` prints one line: `min`, `mean`, `p50` and `p90` of a call, and `vision`, the vision stage's share, all in ms. On a CPU build, `VLA_N_THREADS` sets the thread count (default: all cores, capped at 16).
+
+        **4. Run that command 3 times**, as 3 separate processes. Report the process with the lowest `mean`, with its numbers exactly as printed.
+
+        **5. Measure peak memory** during each run, and report the largest reading of the three:
+
+        | Hardware | How |
+        |---|---|
+        | NVIDIA GPU | VRAM: `nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader -lms 500` in a second terminal. Host memory as for Linux below. |
+        | Linux CPU, Jetson | `/usr/bin/time -v ./build/vla-bench ...`, then "Maximum resident set size" (KiB) |
+        | macOS | `/usr/bin/time -l ./build/vla-bench ...`, then "maximum resident set size" (bytes) |
+        | Windows | the process's peak working set, from Task Manager or `Get-Process` |
+
+        **6. Optional: the fastest flags.** Try `--flash-attn`, `--mm-prec default`, `--weight-dtype bf16` and `--weight-dtype f16`, each alone and with `--flash-attn`, and on CUDA `--act-dtype bf16 --flash-attn` for π0 and Evo-1. Keep a flag set only if its mean is more than 3% below the defaults, and report it as its own row. These flags can change the predicted actions.
+
+        While measuring, keep the machine otherwise idle and on AC power, and note its power mode. The full protocol, including how each backend's memory is read, is in the [vla.cpp report template](https://github.com/VinRobotics/vla.cpp/blob/main/docs/benchmark/TEMPLATE.md).
+
+        ## Measuring with vla.simd
+
+        Run `vla-simd-serve --model <model> --model-dir <gguf> --warmup 5 --bench 50 --json` (`--bench 20` when a call takes more than 3 s) at the fastest thread count, and report the median and peak RSS. `tools/bench_sweep.py` runs the whole thread sweep; the protocol is in the [vla.simd report template](https://github.com/cair-vinuni/vla.simd/blob/main/docs/benchmark/TEMPLATE.md).
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine
+      options:
+        - vla.cpp
+        - vla.simd
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Engine commit
+      description: "`git rev-parse --short HEAD` in the engine's checkout. For vla.cpp, add the llama.cpp tag from the CMake log."
+      placeholder: c93ca0a, llama.cpp b11223
+    validations:
+      required: true
+
+  - type: input
+    id: policy
+    attributes:
+      label: Policies and checkpoints
+      placeholder: SmolVLA (vrfai/smolvla-libero-gguf), π0.5 (vrfai/pi05-libero-gguf)
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: The processor that ran the model, its memory, and the host for a GPU.
+      placeholder: NVIDIA RTX 4070, 12 GB, on a Ryzen 7 7700
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup
+    attributes:
+      label: Test setup
+      description: OS and kernel; driver and toolkit (CUDA, Metal, oneAPI, OpenVINO); power mode; CPU threads.
+      placeholder: |
+        Ubuntu 24.04, kernel 6.8
+        Driver 580.95 / CUDA 12.8
+        AC power, performance profile
+    validations:
+      required: true
+
+  - type: textarea
+    id: build
+    attributes:
+      label: Build command
+      render: shell
+      placeholder: cmake -B build -DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=89
+
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: "One row per policy and flag set. For vla.cpp, the best of 3 processes in ms as printed, and the largest memory reading of the 3. For vla.simd, give the precision, threads, median, p10, p90, p95 and peak RSS instead."
+      value: |
+        | Policy | Flags | Views | Input | min ms | mean ms | p50 ms | p90 ms | vision ms | Peak memory MiB |
+        |---|---|--:|--:|--:|--:|--:|--:|--:|--:|
+        |  | defaults |  |  |  |  |  |  |  |  |
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Raw output
+      description: The output of all 3 runs per policy, and the memory readings.
+      render: text
+
+  - type: checkboxes
+    id: protocol
+    attributes:
+      label: Protocol
+      options:
+        - label: Each policy ran at its native views and input size, with the published checkpoint unchanged.
+          required: true
+        - label: "Each vla.cpp row is the best of 3 processes of `--warmup 3 --reps 20`; each vla.simd row is a `--warmup 5 --bench 50` run at the fastest thread count."
+          required: true
+        - label: Nothing else heavy ran on the machine while measuring.
+          required: true

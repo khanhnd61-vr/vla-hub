@@ -36,7 +36,7 @@
     <section class="hero">
       <div class="wrap hero__in">
         <p class="eyebrow">Vision-Language-Action inference, measured</p>
-        <h1>How fast does your <span class="accent">robot policy</span> run?</h1>
+        <h1>How fast does your <span class="accent-warm">VLA</span> run on <span class="accent">our engine</span>?</h1>
         <p class="lede">
           Search measured latency and memory for <strong data-count="models">16</strong> open VLA policies
           on <strong data-count="devices">16</strong> devices, from an RTX 5090 to a Raspberry Pi 5.
@@ -60,6 +60,11 @@
           <button type="button" data-q="NPU">NPUs</button>
           <button type="button" data-q="π0.5 CUDA">π0.5 on CUDA</button>
           <button type="button" data-q="INT8">INT8</button>
+        </div>
+        <div class="hero-ask">
+          <span>Can't find your device or policy?</span>
+          <a class="btn btn--ghost" data-issue="request" href="https://github.com/khanhnd61-vr/vla-hub/issues/new?template=benchmark-request.yml" target="_blank" rel="noopener">Request a benchmark ↗</a>
+          <a class="btn btn--ghost" data-issue="submit" href="https://github.com/khanhnd61-vr/vla-hub/issues/new?template=benchmark-result.yml" target="_blank" rel="noopener">Submit a result ↗</a>
         </div>
         <dl class="stats">
           <div class="stat--main"><dt>Measurements</dt><dd data-count="results"></dd></div>
@@ -156,8 +161,12 @@
             <tbody id="rows"></tbody>
           </table>
           <div id="empty" class="empty" hidden>
-            <p><strong>No measurement matches.</strong> Try fewer words, or clear a filter.</p>
-            <button type="button" class="btn" data-reset>Reset filters</button>
+            <p><strong>No measurement matches.</strong> Try fewer words or clear a filter. If we haven't measured it yet, ask for it or send us your numbers.</p>
+            <div class="empty__actions">
+              <button type="button" class="btn btn--ghost" data-reset>Reset filters</button>
+              <a class="btn" data-issue="request" href="https://github.com/khanhnd61-vr/vla-hub/issues/new?template=benchmark-request.yml" target="_blank" rel="noopener">Request a benchmark ↗</a>
+              <a class="btn btn--ghost" data-issue="submit" href="https://github.com/khanhnd61-vr/vla-hub/issues/new?template=benchmark-result.yml" target="_blank" rel="noopener">Submit a result ↗</a>
+            </div>
           </div>
         </div>
         <button type="button" class="btn btn--ghost more" id="more" hidden></button>

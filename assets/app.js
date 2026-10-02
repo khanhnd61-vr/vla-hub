@@ -548,10 +548,54 @@
     $('#f-all').checked = state.all;
   };
 
+  // ---------- Requests and submitted results, as issues on the hub's repo ----------
+  const ISSUES = 'https://github.com/khanhnd61-vr/vla-hub/issues/new';
+  // filters: the explorer's selection applies too (the hero search ignores it, as submitting it does)
+  const issueUrl = (kind, query = state.q, filters = state) => {
+    const q = query.trim();
+    const named = parseQuery(q).models; // a policy typed by name, e.g. "pi0.5"
+    const fromQuery = filters.model === 'all' && named && named.size === 1;
+    const modelId = filters.model !== 'all' ? filters.model : fromQuery ? [...named][0] : null;
+    const model = modelId ? META.models[modelId].name : '';
+    const device = filters.device !== 'all' ? META.devices[filters.device].name : '';
+    const engine = filters.engine !== 'all' ? filters.engine : '';
+    // The words left once the policy's name is taken out, e.g. "Jetson" in "SmolVLA Jetson"
+    const rest = fromQuery ? q.split(/\s+/).filter((w) => !MODEL_ALIAS.has(norm(w))).join(' ') : q;
+    let what;
+    if (model && device) what = `${model} on ${device}`;
+    else if (model) what = `${model} on ${rest || '<device>'}`;
+    else if (device) what = `${rest || '<policy>'} on ${device}`;
+    else what = q || '<policy> on <device>';
+    if (engine) what += ` with ${engine}`;
+    // The issue forms in .github/ISSUE_TEMPLATE carry the measuring guide; a query
+    // parameter named after a field's id fills that field in.
+    const params = {
+      template: kind === 'request' ? 'benchmark-request.yml' : 'benchmark-result.yml',
+      title: `${kind === 'request' ? 'Benchmark request' : 'Benchmark result'}: ${what}`,
+    };
+    const spec = modelId && engine ? META.models[modelId].engines[engine] : null;
+    if (model) params.policy = kind !== 'request' && spec && spec.hf ? `${model} (${spec.hf})` : model;
+    if (device) params.device = device;
+    if (engine) params.engine = engine;
+    return `${ISSUES}?${Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')}`;
+  };
+
+  // The hero's buttons follow what is typed in the hero search, the others the explorer.
+  const heroQ = $('#hero-q');
+  const syncIssues = () => {
+    $$('[data-issue]').forEach((a) => {
+      a.href = a.closest('.hero') && heroQ.value.trim()
+        ? issueUrl(a.dataset.issue, heroQ.value, DEFAULTS)
+        : issueUrl(a.dataset.issue);
+    });
+  };
+  heroQ.addEventListener('input', syncIssues);
+
   const render = () => {
     const rows = filtered();
     renderTable(rows);
     renderPanel(rows);
+    syncIssues();
     writeURL();
   };
   const update = (patch, { keepPage = false } = {}) => {

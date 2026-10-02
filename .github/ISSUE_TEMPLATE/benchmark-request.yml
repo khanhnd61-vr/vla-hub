@@ -1,0 +1,41 @@
+name: Request a benchmark
+description: Ask for a policy or a device that the hub does not list yet.
+title: "Benchmark request: <policy> on <device>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell us what to measure. If you can run it yourself, a [result submission](https://github.com/khanhnd61-vr/vla-hub/issues/new?template=benchmark-result.yml) lands faster: it walks you through the protocol step by step.
+
+  - type: input
+    id: policy
+    attributes:
+      label: Policy
+      description: A policy the hub lists, or a new one with a link to its weights.
+      placeholder: π0.5, or https://huggingface.co/...
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: The processor, and the board or computer it sits in.
+      placeholder: Jetson Orin NX 16 GB
+    validations:
+      required: true
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine
+      options:
+        - Either
+        - vla.cpp
+        - vla.simd
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: Your robot or use case, and the latency or action rate it needs.

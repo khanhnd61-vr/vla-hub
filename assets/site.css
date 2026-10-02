@@ -64,6 +64,7 @@ button, input, select { font: inherit; color: inherit; }
 .skip { position: absolute; left: 12px; top: -48px; z-index: 60; background: var(--primary); color: var(--cream); padding: 8px 14px; border-radius: 999px; }
 .skip:focus { top: 12px; }
 .accent { color: var(--support); white-space: nowrap; }
+.accent-warm { color: #b8742c; }  /* a deeper --secondary, 3.4:1 on --bg for large text */
 
 /* ---------- Engine marks: a colored dot beside ink text ---------- */
 .eng {
@@ -148,6 +149,8 @@ a.eng:hover { color: var(--support); }
   transition: background .18s ease, color .18s ease;
 }
 .suggest button:hover { background: var(--sage); color: #2f3d2f; }
+.hero-ask { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-top: 14px; font-size: .9rem; color: var(--ink-soft); }
+.hero-ask .btn { padding: 6px 16px; font-size: .88rem; }
 
 /* Stat tiles, like the homepage explorer's */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 700px; margin: 44px auto 0; }
@@ -304,7 +307,13 @@ tr.detail > td { padding: 4px 14px 20px 36px; background: var(--bg); }
 .detail__links a { color: var(--support); }
 .detail__links a:hover { color: var(--primary); }
 .empty { padding: 48px 24px; text-align: center; display: grid; gap: 14px; justify-items: center; color: var(--ink-soft); }
+.empty p { max-width: 54ch; }
 .more { display: block; margin: 18px auto 0; }
+
+/* Request a benchmark or submit a result: both open an issue on the hub's repo */
+.empty__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.empty__actions .btn { padding: 9px 18px; font-size: .92rem; }
+.empty__actions .btn--ghost { padding: 7px 16px; }
 
 /* ---------- Model panel ---------- */
 .mpanel {
