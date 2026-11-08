@@ -708,6 +708,7 @@
   const HW_CLASSES = [
     { label: 'NVIDIA GPUs', test: (r) => r.backend === 'CUDA' && r.d.kind !== 'Embedded' },
     { label: 'NVIDIA Jetson', test: (r) => r.d.kind === 'Embedded' },
+    { label: 'AMD GPUs', test: (r) => r.backend === 'ROCm' },
     { label: 'Apple Silicon GPUs', test: (r) => r.backend === 'Metal' },
     { label: 'Intel GPUs', test: (r) => r.proc === 'GPU' && (r.backend === 'SYCL' || r.backend === 'OpenVINO') },
     { label: 'NPUs', test: (r) => r.proc === 'NPU' },

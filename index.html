@@ -294,7 +294,7 @@
           </div>
           <div>
             <h3><span class="eng eng--cpp">vla.cpp</span></h3>
-            <p><code>vla-bench</code> on synthetic inputs, at each model's native views and input size: 3 warmups and 20 timed calls per process, 3 processes, and the process with the lowest mean is reported. Memory is the peak VRAM and host RSS, or the RSS alone on unified memory. Every device ran commit <code data-round="vla.cpp"></code>, except the Core Ultra X7 358H, at <code>450992c</code> (one OpenVINO fix later).</p>
+            <p><code>vla-bench</code> on synthetic inputs, at each model's native views and input size: 3 warmups and 20 timed calls per process, 3 processes, and the process with the lowest mean is reported. Memory is the peak VRAM and host RSS, the RSS alone on unified memory, or the device buffers in shared memory on the iGPU and NPUs. Most devices ran commit <code data-round="vla.cpp"></code>; the rows measured since ran later commits on the same llama.cpp pin: the Jetson Orin NX at <code>f7e0f7f</code>, the Jetson AGX Orin at <code>e6653e8</code> (its bit-exact CUDA path), the Radeon RX 9060 XT at <code>d0e5d00</code>, the Core Ultra X7 358H at <code>a83bcad</code> and the Dragonwing IQ-10 at <code>7c76ea9</code>.</p>
             <p>Two rows differ: the RTX 5090 is its PR author's minimum over 5 rounds, and the Apple M5 Max comes from an earlier build. Task success is from LIBERO on an RTX 3090, 200 episodes per suite.</p>
             <p><a href="https://github.com/VinRobotics/vla.cpp/tree/main/docs/benchmark" target="_blank" rel="noopener">vla.cpp benchmark reports ↗</a></p>
           </div>

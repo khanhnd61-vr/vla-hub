@@ -19,7 +19,7 @@ CPP_MODELS = {
     'SmolVLA': 'smolvla', 'π0': 'pi0', 'pi0': 'pi0', 'π0.5': 'pi05', 'pi0.5': 'pi05',
     'GR00T N1.5': 'gr00t15', 'GR00T N1.6': 'gr00t16', 'GR00T N1.7': 'gr00t17',
     'BitVLA': 'bitvla', 'Evo-1': 'evo1', 'VLA-Adapter': 'adapter', 'OpenVLA-OFT': 'oft',
-    'VLA-JEPA': 'jepa', 'Octo-Small': 'octo', 'TurboVLA': 'turbovla',
+    'VLA-JEPA': 'jepa', 'Octo-Small': 'octo', 'TurboVLA': 'turbovla', 'ACT': 'act',
 }
 SIMD_MODELS = {
     'ACT': 'act', 'IMPACT': 'impact', 'SmolVLA': 'smolvla', 'Octo-Small': 'octo',
@@ -37,6 +37,9 @@ FLAGS = {
 MEM_COLS = {
     'Peak VRAM MiB': 'vram', 'Peak host RSS MiB': 'rss', 'Peak RSS MiB': 'rss',
     'Peak working set MiB': 'rss', 'Peak device buffers MiB': 'shared',
+    # the IQ-10's weights live in FastRPC buffers outside the RSS; the AGX Orin's CUDA MiB is the
+    # device memory the process holds, counted by a preload shim
+    'System RAM MiB': 'shared', 'CUDA MiB': 'vram',
 }
 
 # vla.cpp: report -> device, then one entry per section of that report:
@@ -46,12 +49,15 @@ CPP_REPORTS = [
     ('rtx-3090.md', 'rtx3090', [(None, 'CUDA', 'GPU', 'GPU')]),
     ('rtx-5070-laptop.md', 'rtx5070l', [(None, 'CUDA', 'GPU', 'GPU')]),
     ('rtx-3060.md', 'rtx3060', [(None, 'CUDA', 'GPU', 'GPU')]),
+    ('rx-9060-xt.md', 'rx9060xt', [(None, 'ROCm', 'GPU', 'GPU')]),
     ('jetson-agx-orin.md', 'agxorin', [(None, 'CUDA', 'GPU', 'GPU')]),
+    ('jetson-orin-nx.md', 'orinnx', [(None, 'CUDA', 'GPU', 'GPU')]),
     ('jetson-orin-nano.md', 'orinnano', [(None, 'CUDA', 'GPU', 'GPU')]),
     ('apple-m4.md', 'm4', [(None, 'Metal', 'GPU', 'GPU')]),
     ('arc-a380.md', 'a380', [(None, 'SYCL', 'GPU', 'GPU')]),
     ('core-ultra-x7-358h.md', 'x7', [
-        ('Arc B390 iGPU', 'OpenVINO', 'GPU', 'Arc B390 iGPU'),
+        ('Arc B390 iGPU (SYCL)', 'SYCL', 'GPU', 'Arc B390 iGPU'),
+        ('Arc B390 iGPU (OpenVINO GPU plugin)', 'OpenVINO', 'GPU', 'Arc B390 iGPU'),
         ('AI Boost NPU', 'OpenVINO', 'NPU', 'AI Boost NPU'),
         ('OpenVINO CPU plugin', 'OpenVINO', 'CPU', 'CPU'),
         ('ggml CPU backend', 'ggml', 'CPU', 'CPU'),
@@ -60,15 +66,19 @@ CPP_REPORTS = [
         ('Hexagon NPU', 'Hexagon', 'NPU', 'NPU'),
         ('Oryon CPU', 'ggml', 'CPU', 'Oryon CPU'),
     ]),
+    ('qualcomm-iq10.md', 'iq10', [(None, 'Hexagon', 'NPU', 'NPU')]),
     ('core-i7-14700f.md', 'i7', [(None, 'ggml', 'CPU', 'CPU')]),
     ('core-i9-14900hx.md', 'i9', [(None, 'ggml', 'CPU', 'CPU')]),
     ('core-i5-12400f.md', 'i5', [(None, 'ggml', 'CPU', 'CPU')]),
     ('ryzen-5-5500.md', 'ryzen5', [(None, 'ggml', 'CPU', 'CPU')]),
 ]
-# Reports that ran at a different commit from the round in docs/benchmark/README.md.
-CPP_BUILD = {'x7': '450992c'}
+# Reports that ran at a different commit from the round in docs/benchmark/README.md (all at the
+# same llama.cpp pin, b11223); the README there says what each one changed.
+CPP_BUILD = {'orinnx': 'f7e0f7f', 'agxorin': 'e6653e8', 'rx9060xt': 'd0e5d00', 'x7': 'a83bcad',
+             'iq10': '7c76ea9'}
 CPP_ROUND = 'c93ca0a'
-# docs/backend/ov.md lists π0's NPU output as wrong; the report did not re-check it.
+# π0 on the AI Boost NPU is a latency only: on 48 fixed inputs its gripper flips one step early in
+# one chunk (docs/backend/ov.md), and the NPU has no F32 mode.
 CPP_EXCLUDE = {('pi0', 'x7', 'AI Boost NPU')}
 
 SIMD_REPORTS = {
